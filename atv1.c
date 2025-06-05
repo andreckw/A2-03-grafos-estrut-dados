@@ -2,10 +2,79 @@
 
 #define MAX_VERTICES 100
 
+typedef struct {
+    int itens[MAX_VERTICES];
+    int frente;
+    int tras;
+} Fila;
+
+
 typedef struct Rede {
 	int n_vertices;
 	int matriz_adj[MAX_VERTICES][MAX_VERTICES];
 } Rede;
+
+
+typedef struct No {
+    int vertice;
+    struct No* prox;
+} No;
+
+void inicializarFila(Fila *f) {
+    f->frente = -1;
+    f->tras = -1;
+}
+
+int estaVazia(Fila *f) {
+    return f->frente == -1;
+}
+
+void enfileirar(Fila *f, int valor) {
+    if (f->tras == MAX_VERTICES - 1) {
+        printf("Fila cheia\n");
+        return;
+    }
+    if (f->frente == -1)
+        f->frente = 0;
+    f->tras++;
+    f->itens[f->tras] = valor;
+}
+
+int desenfileirar(Fila *f) {
+    if (estaVazia(f)) {
+        printf("Fila vazia\n");
+        return -1;
+    }
+    int valor = f->itens[f->frente];
+    f->frente++;
+    if (f->frente > f->tras)
+        f->frente = f->tras = -1;
+    return valor;
+}
+
+void BFS(Rede *grafo, int n, int inicio) {
+    int visitado[MAX_VERTICES] = {0};
+    Fila f;
+    inicializarFila(&f);
+
+    visitado[inicio] = 1;
+    enfileirar(&f, inicio);
+
+
+    while (!estaVazia(&f)) {
+        int atual = desenfileirar(&f);
+
+        for (int i = 0; i < n; i++) {
+            if (grafo->matriz_adj[atual][i] == 1 && !visitado[i]) {
+                enfileirar(&f, i);
+                printf("Sugestão de amizade: %d", i);
+                visitado[i] = 1;
+            }
+        }
+        
+        printf("\n");
+    }
+}
 
 
 Rede criarRede(int n_vertices) {
@@ -64,6 +133,29 @@ void adicionarConexao(Rede *grafo) {
     adicionarAresta(grafo, v_i, v_j);
 }
 
+void verAmizades(Rede *grafo) {
+    int i = -1;
+    
+    printf("Digite o id do usuário: ");
+    scanf("%d", &i);
+    
+    for (int j = 0; j < MAX_VERTICES; j++) {
+        if (grafo->matriz_adj[i][j] == 1) {
+            printf("Usuário %d tem amizade %d\n", i, j);
+        }
+    }
+}
+
+void sugestaoAmizades(Rede *grafo) {
+    int i = -1;
+    
+    printf("Digite o id do usuário: ");
+    scanf("%d", &i);
+    
+    BFS(grafo, MAX_VERTICES, i);
+}
+
+
 int main() {
 	
 	Rede grafo = criarRede(MAX_VERTICES);
@@ -73,6 +165,8 @@ int main() {
 	    
 	    printf("[1] Adicionar usuário\n");
 	    printf("[2] Adicionar conexões de usuário\n");
+	    printf("[3] Ver amizades de um usuario\n");
+	    printf("[4] Sugestão de amizades\n");
 	    scanf("%d", &escolha);
 	    
 	    switch (escolha) {
@@ -81,6 +175,12 @@ int main() {
 	            break;
 	        case 2:
 	            adicionarConexao(&grafo);
+	            break;
+	       case 3:
+	            verAmizades(&grafo);
+	            break;
+	       case 4:
+	            sugestaoAmizades(&grafo);
 	            break;
 	    }
 	    
